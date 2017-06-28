@@ -1,4 +1,4 @@
-package com.clarivate.content.processing.publication;
+package publication;
 
 import com.amazonaws.services.stepfunctions.builder.StateMachine;
 import com.amazonaws.services.stepfunctions.model.StateMachineListItem;
