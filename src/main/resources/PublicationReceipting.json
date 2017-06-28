@@ -1,0 +1,80 @@
+{
+  "Comment": "PublicationReceipting",
+  "StartAt": "PublicationReceipting",
+  "States": {
+    "CallPIPS": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
+      "Next": "CheckPIPSResponse",
+      "Catch": [
+        {
+          "ErrorEquals": ["CustomError"],
+          "Next": "CustomErrorFallback"
+        },
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "Next": "ReservedTypeFallback"
+        },
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "CatchAllFallback"
+        }
+      ]
+    },
+    "CustomErrorFallback": {
+      "Type": "Pass",
+      "Result": "This is a fallback from a custom lambda function exception",
+      "End": true
+    },
+    "ReservedTypeFallback": {
+      "Type": "Pass",
+      "Result": "This is a fallback from a reserved error code",
+      "End": true
+    },
+    "CatchAllFallback": {
+      "Type": "Pass",
+      "Result": "This is a fallback from a reserved error code",
+      "End": true
+    },
+    "CheckPIPSResponse": {
+      "Type" : "Choice",
+      "Choices": [
+        {
+          "Variable": "$.foo",
+          "NumericEquals": 1,
+          "Next": "FirstMatchState"
+        },
+        {
+          "Variable": "$.foo",
+          "NumericEquals": 2,
+          "Next": "ErrorsInBundle"
+        }
+      ],
+      "Default": "Inactive"
+    },
+
+    "FirstMatchState": {
+      "Type" : "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:OnFirstMatch",
+      "Next": "CallContentService"
+    },
+
+    "ErrorsInBundle": {
+      "Type" : "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:OnSecondMatch",
+      "End": true
+    },
+
+    "Inactive": {
+      "Type": "Fail",
+      "Cause": "No Matches!",
+      "End": true
+    },
+
+    "CallContentService": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
+      "End": true
+    }
+  }
+}

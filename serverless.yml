@@ -1,0 +1,39 @@
+service: PublicationReceipting
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  substage: snapshot
+  region: us-west-2
+  deploymentBucket: link-content
+
+stepFunctions:
+  stateMachines:
+    PublicationReceipting:
+      Comment: "PublicationReceipting"
+      StartAt: CallPIPS
+      States:
+        ProcessFile:
+          Type: Task
+          Resource: publication-PIPS
+          Next: MoveFile
+        MoveFile:
+          Type: Task
+          Resource: publication-Notify
+          Next: SendEmail
+        SendEmail:
+          Type: Task
+          Resource: publication_ContentService
+          End: true
+
+resources:
+  Resources:
+    ServerlessDeploymentBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: link-content
+  Outputs:
+     ServerlessDeploymentBucketName:
+       Description: "Description for the output"
+       Value: "Some output value"

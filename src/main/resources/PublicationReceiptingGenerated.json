@@ -1,0 +1,91 @@
+{
+  "Comment" : "PublicationReceipting",
+  "StartAt" : "CallPIPS",
+  "States" : {
+    "CallPIPS" : {
+      "Next" : "CheckPIPSResponse",
+      "Resource" : "arn:aws:lambda:us-west-2:509786517216:function:publication-PIPS",
+      "Retry" : [ {
+        "ErrorEquals" : [ "States.Timeout" ],
+        "IntervalSeconds" : 5,
+        "MaxAttempts" : 5,
+        "BackoffRate" : 2.0
+      } ],
+      "Catch" : [ {
+        "Next" : "SystemError",
+        "ErrorEquals" : [ "States.TaskFailed" ]
+      } ],
+      "Type" : "Task"
+    },
+    "CheckPIPSResponse" : {
+      "Default" : "CheckScholarlyItems",
+      "Choices" : [ {
+        "Variable" : "$.status",
+        "StringEquals" : "INACTIVE",
+        "Next" : "Inactive"
+      }, {
+        "Variable" : "$.exceptions",
+        "BooleanEquals" : true,
+        "Next" : "BusinessErrors"
+      } ],
+      "Type" : "Choice"
+    },
+    "BusinessErrors" : {
+      "Next" : "Notify",
+      "Type" : "Pass"
+    },
+    "SystemError" : {
+      "End" : true,
+      "Type" : "Pass"
+    },
+    "Inactive" : {
+      "End" : true,
+      "Type" : "Pass"
+    },
+    "Notify" : {
+      "End" : true,
+      "Resource" : "arn:aws:lambda:us-west-2:509786517216:function:publication-Notify",
+      "Type" : "Task"
+    },
+    "CheckScholarlyItems" : {
+      "Default" : "Notify",
+      "Choices" : [ {
+        "Variable" : "$.scholarlyItems",
+        "NumericGreaterThan" : 0,
+        "Next" : "CheckPublicationArtifacts"
+      } ],
+      "Type" : "Choice"
+    },
+    "CheckPublicationArtifacts" : {
+      "Default" : "CallSIMS",
+      "Choices" : [ {
+        "Variable" : "$.publicationArtifacts",
+        "NumericGreaterThan" : 0,
+        "Next" : "CallContentService"
+      } ],
+      "Type" : "Choice"
+    },
+    "CallContentService" : {
+      "Next" : "CallSIMS",
+      "Resource" : "arn:aws:lambda:us-west-2:509786517216:function:publication_ContentService",
+      "Retry" : [ {
+        "ErrorEquals" : [ "States.Timeout" ],
+        "IntervalSeconds" : 5,
+        "MaxAttempts" : 5,
+        "BackoffRate" : 2.0
+      } ],
+      "Type" : "Task"
+    },
+    "CallSIMS" : {
+      "End" : true,
+      "Resource" : "arn:aws:lambda:us-west-2:509786517216:function:publication-SIMS",
+      "Retry" : [ {
+        "ErrorEquals" : [ "States.Timeout" ],
+        "IntervalSeconds" : 5,
+        "MaxAttempts" : 5,
+        "BackoffRate" : 2.0
+      } ],
+      "Type" : "Task"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+group 'com.clarivate'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'groovy'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.amazonaws:aws-java-sdk-stepfunctions:1.11.86'
+    compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.25'
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
+
+//    compile 'org.spockframework:spock-core:1.1-groovy-2.4'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
